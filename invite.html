@@ -1,0 +1,332 @@
+<!-- PROGRAMMED BY @ITGAUY -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ice skating with me?</title>
+<style>
+  :root {
+    --bg: #E4F1FA;
+    --card: #FFFFFF;
+    --ink: #17324D;
+    --muted: #5F7A93;
+    --accent: #2F7FD1;
+    --accent-ink: #FFFFFF;
+    --chip: #EEF6FC;
+    --line: #B9D6EC;
+    --no: #E0566B;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Fredoka", "Trebuchet MS", Arial, sans-serif;
+    margin: 0; min-height: 100vh;
+    display: flex; justify-content: center; align-items: center;
+    background: var(--bg); color: var(--ink); padding: 16px;
+    overflow-x: hidden;
+  }
+  #content {
+    background: var(--card); border: 2px solid var(--line);
+    border-radius: 20px; box-shadow: 0 10px 24px rgba(23,50,77,.15);
+    padding: 28px 24px; text-align: center;
+    width: 100%; max-width: 480px; position: relative; z-index: 2;
+  }
+  h2 { margin: 0 0 6px; font-size: 28px; line-height: 1.2; }
+  p.sub { margin: 0 0 18px; color: var(--muted); }
+  .hidden { display: none !important; }
+
+  button { font-family: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+  #yesButton, #noButton, #confirmBtn, #copyBtn {
+    font-size: 20px; border: none; border-radius: 14px;
+    padding: 14px 22px; margin: 8px; color: #fff;
+    box-shadow: 0 6px 12px rgba(0,0,0,.18); transition: .2s;
+  }
+  #yesButton, #confirmBtn, #copyBtn { background: var(--accent); }
+  #noButton { background: var(--no); }
+  #yesButton:hover, #confirmBtn:hover:not(:disabled), #copyBtn:hover, #noButton:hover { box-shadow: 0 10px 18px rgba(0,0,0,.25); }
+  #noButton:disabled { background: #ddd; color: #666; box-shadow: none; cursor: not-allowed; }
+  #confirmBtn:disabled { background: #A9BCCD; box-shadow: none; cursor: not-allowed; }
+  #message { min-height: 1.4em; margin: 8px 0 0; color: var(--muted); }
+
+  fieldset { border: none; padding: 0; margin: 0 0 18px; text-align: left; }
+  legend { font-weight: 600; font-size: 18px; margin-bottom: 8px; padding: 0; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips label { position: relative; }
+  .chips input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  .chips span {
+    display: block; padding: 9px 13px; border-radius: 12px;
+    background: var(--chip); border: 2px solid var(--line);
+    font-size: 15px; line-height: 1.2; transition: .15s;
+  }
+  .chips input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .chips input:focus-visible + span { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .chips.days span { min-width: 92px; text-align: center; }
+  .chips.days b { display: block; font-size: 13px; font-weight: 500; opacity: .85; }
+
+  #guestDetails { margin-top: 12px; }
+  #guestDetails label { display: block; font-size: 15px; margin-bottom: 10px; color: var(--muted); }
+  #guestDetails select, #guestDetails input[type=text] {
+    display: block; width: 100%; margin-top: 4px; padding: 10px;
+    font: inherit; font-size: 16px; color: var(--ink);
+    border: 2px solid var(--line); border-radius: 10px; background: #fff;
+  }
+
+  #summary { text-align: left; background: var(--chip); border: 2px solid var(--line); border-radius: 14px; padding: 14px 16px; margin: 14px 0; line-height: 1.7; }
+  #summary b { display: inline-block; min-width: 72px; color: var(--muted); font-weight: 500; }
+
+  .flake {
+    position: fixed; top: -40px; z-index: 1; pointer-events: none; color: #8FC1EA;
+    animation: fall linear infinite;
+  }
+  @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .flake { animation: none; top: 20px; } }
+</style>
+</head>
+<body>
+<div id="content">
+
+  <!-- STEP 1: the question -->
+  <section id="stepAsk">
+    <h2 id="question">Wanna go ice skating with me?</h2>
+    <p class="sub">SM Mall of Asia Ice Skating Rink</p>
+    <button id="yesButton">YES</button>
+    <button id="noButton">NO</button>
+    <p id="message" aria-live="polite"></p>
+  </section>
+
+  <!-- STEP 2: pick date, time, guests -->
+  <section id="stepPick" class="hidden">
+    <h2>Yay! Pick your slot</h2>
+    <p class="sub">Available Nov 2 to Nov 8 only</p>
+
+    <fieldset>
+      <legend>Your name</legend>
+      <div id="guestDetails2">
+        <input type="text" id="yourName" placeholder="So I know who's replying" maxlength="60"
+          style="display:block;width:100%;padding:10px;font:inherit;font-size:16px;color:var(--ink);border:2px solid var(--line);border-radius:10px;">
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Which day?</legend>
+      <div class="chips days" id="dayChips"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>What time?</legend>
+      <div class="chips" id="timeChips"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Are you inviting other people?</legend>
+      <div class="chips">
+        <label><input type="radio" name="guests" value="no" checked><span>Just us two</span></label>
+        <label><input type="radio" name="guests" value="yes"><span>I'm bringing others</span></label>
+      </div>
+      <div id="guestDetails" class="hidden">
+        <label>How many others?
+          <select id="guestCount">
+            <option>1</option><option>2</option><option>3</option>
+            <option>4</option><option>5</option><option>6 or more</option>
+          </select>
+        </label>
+        <label>Their names (optional)
+          <input type="text" id="guestNames" placeholder="e.g. Ana, Migs">
+        </label>
+      </div>
+    </fieldset>
+
+    <button id="confirmBtn" disabled>Confirm</button>
+  </section>
+
+  <!-- STEP 3: confirmation -->
+  <section id="stepDone" class="hidden">
+    <h2>See you on the ice!</h2>
+    <p class="sub">Here's what you picked</p>
+    <div id="summary"></div>
+    <button id="copyBtn">Copy my reply</button>
+    <p id="copyMsg" aria-live="polite" class="sub"></p>
+  </section>
+
+</div>
+
+<script>
+  // ---- Easy to edit ----
+  // Paste your Firebase Realtime Database URL here (see SETUP.txt), no trailing slash.
+  // Example: https://my-invite-default-rtdb.asia-southeast1.firebasedatabase.app
+  // Leave it empty to run in TEST MODE (saves in this browser only).
+  var DB_URL = '';
+  var DAYS = [
+    { name: 'Monday',    date: 'Nov 2' },
+    { name: 'Tuesday',   date: 'Nov 3' },
+    { name: 'Wednesday', date: 'Nov 4' },
+    { name: 'Thursday',  date: 'Nov 5' },
+    { name: 'Friday',    date: 'Nov 6' },
+    { name: 'Saturday',  date: 'Nov 7' },
+    { name: 'Sunday',    date: 'Nov 8' }
+  ];
+  var TIMES = ['10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM'];
+  // ----------------------
+
+  var $ = function (id) { return document.getElementById(id); };
+  var yesBtn = $('yesButton'), noBtn = $('noButton'), msg = $('message');
+
+  // Build day and time chips
+  DAYS.forEach(function (d, i) {
+    $('dayChips').insertAdjacentHTML('beforeend',
+      '<label><input type="radio" name="day" value="' + i + '"><span>' + d.name.slice(0, 3) + '<b>' + d.date + '</b></span></label>');
+  });
+  TIMES.forEach(function (t) {
+    $('timeChips').insertAdjacentHTML('beforeend',
+      '<label><input type="radio" name="time" value="' + t + '"><span>' + t + '</span></label>');
+  });
+
+  // ---- NO button gimmick ----
+  var noClickCount = 0;
+  function moveNo() {
+    noBtn.style.position = 'fixed';
+    noBtn.style.left = Math.random() * Math.max(window.innerWidth - 80, 0) + 'px';
+    noBtn.style.top  = Math.random() * Math.max(window.innerHeight - 40, 0) + 'px';
+    noBtn.style.margin = '0';
+  }
+  noBtn.addEventListener('click', function () {
+    noClickCount++;
+    if (noClickCount === 1) {
+      yesBtn.style.fontSize = '30px';
+    } else if (noClickCount === 2) {
+      noBtn.style.fontSize = '12px';
+      yesBtn.style.fontSize = '38px';
+    } else if (noClickCount === 3) {
+      noBtn.style.fontSize = '9px';
+      yesBtn.style.fontSize = '46px';
+    } else if (noClickCount < 10) {
+      moveNo();
+    } else if (noClickCount < 15) {
+      moveNo();
+      msg.innerText = 'Are you sure?';
+    } else {
+      noBtn.disabled = true;
+      noBtn.style.color = 'grey';
+      msg.innerText = 'Oh no! You broke the button :c';
+    }
+  });
+
+  // ---- Snowflakes ----
+  function snow(count) {
+    for (var i = 0; i < count; i++) {
+      var f = document.createElement('div');
+      f.className = 'flake';
+      f.textContent = '\u2744';
+      f.style.left = Math.random() * 100 + 'vw';
+      f.style.fontSize = (14 + Math.random() * 26) + 'px';
+      f.style.animationDuration = (3 + Math.random() * 3) + 's';
+      f.style.animationDelay = (Math.random() * 2) + 's';
+      document.body.appendChild(f);
+    }
+  }
+
+  // ---- YES: go to the picker ----
+  yesBtn.addEventListener('click', function () {
+    $('stepAsk').classList.add('hidden');
+    $('stepPick').classList.remove('hidden');
+    noBtn.style.position = 'static'; // in case it was floating
+    snow(40);
+  });
+
+  // ---- Guests toggle ----
+  document.querySelectorAll('input[name=guests]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      $('guestDetails').classList.toggle('hidden', r.value !== 'yes' || !r.checked);
+      checkReady();
+    });
+  });
+
+  // ---- Enable confirm only when day + time are chosen ----
+  function checkReady() {
+    var ok = document.querySelector('input[name=day]:checked') &&
+             document.querySelector('input[name=time]:checked');
+    $('confirmBtn').disabled = !ok;
+  }
+  document.querySelectorAll('input[name=day], input[name=time]').forEach(function (r) {
+    r.addEventListener('change', checkReady);
+  });
+
+  // ---- Confirm ----
+  var replyText = '';
+  $('confirmBtn').addEventListener('click', function () {
+    var day = DAYS[+document.querySelector('input[name=day]:checked').value];
+    var time = document.querySelector('input[name=time]:checked').value;
+    var bringing = document.querySelector('input[name=guests]:checked').value === 'yes';
+    var count = $('guestCount').value;
+    var names = $('guestNames').value.trim();
+
+    var guestLine = 'Just us two';
+    if (bringing) {
+      guestLine = count + (count === '1' ? ' other person' : ' others');
+      if (names) guestLine += ' (' + names + ')';
+    }
+
+    var rows = [
+      ['Where', 'SM Mall of Asia Ice Skating Rink'],
+      ['When', day.name + ', ' + day.date + ' at ' + time],
+      ['Who', guestLine]
+    ];
+    $('summary').innerHTML = '';
+    rows.forEach(function (r) {
+      var line = document.createElement('div');
+      var label = document.createElement('b');
+      label.textContent = r[0];
+      line.appendChild(label);
+      line.appendChild(document.createTextNode(r[1]));
+      $('summary').appendChild(line);
+    });
+
+    replyText = 'YES to ice skating at SM MOA! ' + day.name + ', ' + day.date + ' at ' + time + '. Who: ' + guestLine + '.';
+    saveResponse({
+      name: $('yourName').value.trim().slice(0, 60),
+      day: day.name, date: day.date, time: time,
+      bringing: bringing, count: bringing ? count : '', names: bringing ? names.slice(0, 200) : ''
+    });
+
+    $('stepPick').classList.add('hidden');
+    $('stepDone').classList.remove('hidden');
+    snow(60);
+  });
+
+  // ---- Save the response (invitee never sees stored data) ----
+  function saveResponse(data) {
+    if (DB_URL) {
+      // Firebase REST: POST adds a new entry. Invitees can add but never read (set in rules).
+      data.submitted = new Date().toISOString();
+      fetch(DB_URL + '/responses.json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).catch(function () {});
+    } else {
+      // TEST MODE: kept only in this browser so you can try the admin page
+      try {
+        var all = JSON.parse(localStorage.getItem('invite_responses') || '[]');
+        data.submitted = new Date().toISOString();
+        all.push(data);
+        localStorage.setItem('invite_responses', JSON.stringify(all));
+      } catch (e) {}
+    }
+  }
+
+  // ---- Copy / share reply ----
+  $('copyBtn').addEventListener('click', function () {
+    function ok() { $('copyMsg').textContent = 'Copied! Paste it in our chat.'; }
+    function fail() { $('copyMsg').textContent = 'Could not copy. Screenshot this page instead.'; }
+    if (navigator.share) {
+      navigator.share({ text: replyText }).catch(function () {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(replyText).then(ok, fail);
+    } else { fail(); }
+  });
+</script>
+</body>
+</html>
